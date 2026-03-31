@@ -13,7 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from docs import DocProcessor
 
-p = DocProcessor("/project/data/documents", "/mnt/docs", "http://localhost:8000/uploadDocument", False)
+# Check environment variables for docmark preprocessing
+ENABLE_DOCMARK = os.getenv('DOCMARK_PREPROCESS', 'false').lower() == 'true'
+DOCMARK_LEVEL = os.getenv('DOCMARK_CLEANING_LEVEL', 'medium')
+
+p = DocProcessor(
+    "/project/data/documents", 
+    "/mnt/docs", 
+    "http://localhost:8000/uploadDocument", 
+    log=False,
+    preprocess_with_docmark=ENABLE_DOCMARK,
+    docmark_cleaning_level=DOCMARK_LEVEL
+)
 p.process()
+exit(0)

@@ -20,6 +20,7 @@ import mimetypes
 import hashlib
 import json
 import os
+import tempfile
 
 # Function to check if running in a Jupyter notebook
 def in_jupyter():
@@ -31,7 +32,8 @@ def in_jupyter():
         return False
 
 class DocProcessor:
-    def __init__(self, docs_dir, mount_docs_dir, upload_url, log=False):
+    def __init__(self, docs_dir, mount_docs_dir, upload_url, log=False, 
+                 preprocess_with_docmark=False, docmark_cleaning_level="medium"):
         self.docs_dir = docs_dir
         self.mount_docs_dir = mount_docs_dir
         self.upload_url = upload_url
@@ -39,6 +41,27 @@ class DocProcessor:
         self.record_lock_file = os.path.join(docs_dir, ".file_cache.lock")
         self.record = dict()
         self.log = log
+        
+        # docmark preprocessing support
+        self.preprocess_with_docmark = preprocess_with_docmark
+        self.docmark_cleaning_level = docmark_cleaning_level
+        self.docmark_client = None
+        
+        if self.preprocess_with_docmark:
+            try:
+                from docmark_client import DocmarkClient
+                self.docmark_client = DocmarkClient()
+                # Verify docmark is available
+                if not self.docmark_client.health_check():
+                    if self.log:
+                        print("⚠️  WARNING: docmark server not available. Preprocessing disabled.")
+                    self.preprocess_with_docmark = False
+                elif self.log:
+                    print(f"✓ docmark preprocessing enabled (level: {self.docmark_cleaning_level})")
+            except ImportError:
+                if self.log:
+                    print("⚠️  WARNING: docmark_client not found. Preprocessing disabled.")
+                self.preprocess_with_docmark = False
 
     def _calculate_hash(self, filepath):
         """Calculate the SHA256 hash of the file content."""
@@ -77,7 +100,12 @@ class DocProcessor:
         has_been_processed, filehash = self._has_been_processed(filepath)
         if not has_been_processed:
             try:
-                self._upload_document(filepath)
+                # Preprocess with docmark if enabled and file is PDF
+                upload_path = filepath
+                if self.preprocess_with_docmark and filepath.lower().endswith('.pdf'):
+                    upload_path = self._preprocess_with_docmark(filepath)
+                
+                self._upload_document(upload_path)
                 self.record[filepath] = filehash
 
                 if self.log:
@@ -87,6 +115,42 @@ class DocProcessor:
         else:
             if self.log:
                 print(f"Skipping {filepath}, already processed.")
+    
+    def _preprocess_with_docmark(self, filepath):
+        """
+        Preprocess PDF with docmark before upload.
+        Returns path to preprocessed file (or original if preprocessing fails).
+        """
+        try:
+            if self.log:
+                print(f"  → Preprocessing with docmark (level: {self.docmark_cleaning_level})...")
+            
+            # Create temp file for output
+            temp_dir = tempfile.mkdtemp()
+            output_path = os.path.join(
+                temp_dir, 
+                os.path.basename(filepath).replace('.pdf', '.md')
+            )
+            
+            # Convert with docmark
+            result = self.docmark_client.convert_document(
+                file_path=filepath,
+                output_path=output_path,
+                rag_mode=True,
+                rag_cleaning_level=self.docmark_cleaning_level,
+                enhanced_pdf=True,
+                preflight=True,
+            )
+            
+            if self.log:
+                print(f"  ✓ Preprocessed: {result['output_file']}")
+            
+            return result['output_file']
+            
+        except Exception as e:
+            if self.log:
+                print(f"  ⚠️  Preprocessing failed, using original: {e}")
+            return filepath
 
     def _upload_document(self, file_path):
         headers = {
