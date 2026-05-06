@@ -254,7 +254,7 @@ def llm_chain_streaming(
           # presence_penalty=pres_pen,
           messages=[{"role": "user", "content": prompt}],
           max_tokens=num_tokens, 
-          stream=True,
+          stream=(inference_mode != "cloud"),
         ) if inference_mode == "cloud" and ("microsoft" in nvcf_model_id or "nemotron" in nvcf_model_id) else openai.chat.completions.create(
           model= nvcf_model_id if inference_mode == "cloud" else ("meta/llama-3.1-8b-instruct" if len(nim_model_id) == 0 else nim_model_id),
           temperature=temp,
@@ -263,19 +263,26 @@ def llm_chain_streaming(
           presence_penalty=pres_pen,
           messages=[{"role": "user", "content": prompt}],
           max_tokens=num_tokens, 
-          stream=True,
+          stream=(inference_mode != "cloud"),
         )
         perf = time.time() - start
         yield str(perf * 1000).split('.', 1)[0]
-        
-        for chunk in completion:
-            content = chunk.choices[0].delta.content
-            if content is not None:
-                yield str(content)
-            else:
-                continue
 
-def rag_chain_streaming(prompt: str, 
+        if inference_mode == "cloud":
+            # Cloud (NVIDIA API Catalog staging) is unstable on long streams —
+            # stream=False above; emit the whole response as a single chunk.
+            content = completion.choices[0].message.content
+            if content:
+                yield str(content)
+        else:
+            for chunk in completion:
+                content = chunk.choices[0].delta.content
+                if content is not None:
+                    yield str(content)
+                else:
+                    continue
+
+def rag_chain_streaming(prompt: str,
                         num_tokens: int, 
                         inference_mode: str, 
                         local_model_id: str,
@@ -352,7 +359,7 @@ def rag_chain_streaming(prompt: str,
           # presence_penalty=pres_pen,
           messages=[{"role": "user", "content": prompt}],
           max_tokens=num_tokens, 
-          stream=True,
+          stream=(inference_mode != "cloud"),
         ) if inference_mode == "cloud" and ("microsoft" in nvcf_model_id or "nemotron" in nvcf_model_id) else openai.chat.completions.create(
           model=nvcf_model_id if inference_mode == "cloud" else ("meta/llama-3.1-8b-instruct" if len(nim_model_id) == 0 else nim_model_id),
           temperature=temp,
@@ -361,17 +368,22 @@ def rag_chain_streaming(prompt: str,
           presence_penalty=pres_pen,
           messages=[{"role": "user", "content": prompt}],
           max_tokens=num_tokens,
-          stream=True
+          stream=(inference_mode != "cloud")
         )
         perf = time.time() - start
         yield str(perf * 1000).split('.', 1)[0]
-        
-        for chunk in completion:
-            content = chunk.choices[0].delta.content
-            if content is not None:
+
+        if inference_mode == "cloud":
+            content = completion.choices[0].message.content
+            if content:
                 yield str(content)
-            else:
-                continue
+        else:
+            for chunk in completion:
+                content = chunk.choices[0].delta.content
+                if content is not None:
+                    yield str(content)
+                else:
+                    continue
 
 def is_base64_encoded(s: str) -> bool:
     """Check if a string is base64 encoded."""
@@ -387,11 +399,60 @@ def is_base64_encoded(s: str) -> bool:
         return False
 
 
+_FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+
+
+def _parse_frontmatter(text: str) -> tuple:
+    """Split flat-key YAML frontmatter from body. Returns (body, metadata_dict).
+
+    Only handles the simple ``key: value`` and ``key: "quoted value"`` shapes
+    written by the Revolution Crossroads materializer. Avoids a yaml dep.
+    """
+    m = _FRONTMATTER_RE.match(text)
+    if not m:
+        return text, {}
+    body = text[m.end():]
+    meta: dict = {}
+    for line in m.group(1).splitlines():
+        line = line.rstrip()
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        k, _, v = line.partition(":")
+        k, v = k.strip(), v.strip()
+        if v.startswith('"') and v.endswith('"'):
+            v = v[1:-1].replace('\\"', '"').replace("\\\\", "\\")
+        if k:
+            meta[k] = v
+    return body, meta
+
+
 def ingest_docs(data_dir: str, filename: str) -> None:
-    """Ingest documents to the VectorDB."""
-    unstruct_reader = download_loader("UnstructuredReader")
-    loader = unstruct_reader()
-    documents = loader.load_data(file=Path(data_dir), split_documents=False)
+    """Ingest documents to the VectorDB.
+
+    Markdown files with YAML frontmatter (e.g. those produced by
+    code/scripts/helpers/materialize-rc-sample.py) bypass UnstructuredReader so
+    the per-row metadata (corpus, source_url, naid/edan_id, dates, etc.) is
+    preserved as queryable Document metadata rather than lost as in-line text.
+    """
+    file_path = Path(data_dir)
+    extra_meta: dict = {}
+    documents = None
+
+    if file_path.suffix.lower() in (".md", ".markdown"):
+        try:
+            raw = file_path.read_text(encoding="utf-8")
+            body, fm = _parse_frontmatter(raw)
+            if fm:
+                extra_meta = fm
+                from llama_index import Document
+                documents = [Document(text=body)]
+        except Exception:  # pylint:disable=broad-exception-caught
+            documents = None  # fall through to UnstructuredReader
+
+    if documents is None:
+        unstruct_reader = download_loader("UnstructuredReader")
+        loader = unstruct_reader()
+        documents = loader.load_data(file=file_path, split_documents=False)
 
     encoded_filename = filename[:-4]
     if not is_base64_encoded(encoded_filename):
@@ -399,11 +460,47 @@ def ingest_docs(data_dir: str, filename: str) -> None:
             "utf-8"
         )
 
+    base_meta = {"filename": encoded_filename, **extra_meta}
+    # Fall back to filename prefix for corpus tagging when frontmatter is absent
+    if "corpus" not in base_meta:
+        prefix = filename.split("_", 1)[0].lower()
+        if prefix in ("loc", "nara", "si"):
+            base_meta["corpus"] = prefix
+
     for document in documents:
-        document.metadata = {"filename": encoded_filename}
+        document.metadata = base_meta
 
     index = get_vector_index()
 
     node_parser = SimpleNodeParser.from_defaults()
     nodes = node_parser.get_nodes_from_documents(documents)
     index.insert_nodes(nodes)
+
+
+def retrieve_evidence_triad(query: str, top_k: int = 24) -> dict:
+    """Return one top-scoring chunk per corpus (loc/nara/si) for an inquiry.
+
+    Implements the "Evidence Triad" retrieval described in the corpus role
+    assignment doc: one Testimony (NARA) + one Coverage (LOC) + one Object
+    (Smithsonian). Uses a single similarity query with a generous ``top_k``
+    and groups by the ``corpus`` metadata field, so it works on the existing
+    single-collection setup without requiring per-corpus collections.
+    """
+    index = get_vector_index()
+    retriever = index.as_retriever(similarity_top_k=top_k)
+    nodes = retriever.retrieve(query)
+
+    by_corpus: dict = {}
+    for n in nodes:
+        meta = dict(getattr(n, "metadata", None) or n.node.metadata or {})
+        corpus = meta.get("corpus")
+        if not corpus or corpus in by_corpus:
+            continue
+        by_corpus[corpus] = {
+            "text": n.node.get_content() if hasattr(n, "node") else n.get_content(),
+            "score": float(n.score) if getattr(n, "score", None) is not None else None,
+            "metadata": meta,
+        }
+        if len(by_corpus) >= 3:
+            break
+    return by_corpus

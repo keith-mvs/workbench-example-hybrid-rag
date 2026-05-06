@@ -18,6 +18,9 @@ data/documents/*
 data/scratch/*
 !data/scratch/.gitkeep
 
+data/sources/*
+!data/sources/.gitkeep
+
 # Byte-compiled / optimized / DLL files
 
 # Temp directories, notebooks created by jupyterlab

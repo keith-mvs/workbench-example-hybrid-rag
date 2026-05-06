@@ -94,7 +94,10 @@ class ChatClient:
         msg = str({"server_url": url, "post_data": data})
         print(f"making inference request - {msg}")
 
-        with requests.post(url, stream=True, json=data, timeout=10) as req:
+        # (connect, read). Cloud-catalog models — esp. Mixtral 8x22B — can
+        # cold-start for 30–60s before the first streamed token; a flat 10s
+        # read timeout was killing the request before the server replied.
+        with requests.post(url, stream=True, json=data, timeout=(10, 300)) as req:
             for chunk in req.iter_content(16):
                 yield chunk.decode("UTF-8")
 
