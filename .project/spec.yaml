@@ -104,8 +104,8 @@ execution:
           icon_url: ""
     resources:
         gpu:
-            requested: 1
-        sharedMemoryMB: 4096
+            requested: 2
+        sharedMemoryMB: 16384
     secrets:
         - variable: NVIDIA_API_KEY
           description: NVIDIA API Key for Cloud Inference (starts with "nvapi-")
