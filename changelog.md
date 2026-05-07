@@ -29,6 +29,19 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.8.1] — 2026-05-07
+
+Sprint handoff. Updates `.remember/remember.md` with the v0.2.0 → v0.8.0
+state so the next session reads cleanly.
+
+### Changed
+
+- **`.remember/remember.md`** rewritten to reflect the 7-commit sprint:
+  what shipped, what's next (push + RCT-002b + GOV-002), and key context
+  (Brev gone, apexlon docs unsynced, system-design.md path change).
+
+---
+
 ## [0.8.0] — 2026-05-07
 
 Closes RCT-008b — server-side GitHub Action mirror of the client-side

@@ -1,17 +1,17 @@
 # Handoff
 
 ## State
-R-CT (Hybrid RAG fork) demo path is live: 64 curated .md ingested into Milvus `llamalection`, Cloud Mixtral 8x22B answering coherently after non-streaming patch (`code/chain_server/chains.py`) + 300s read timeout (`code/chatui/chat_client.py`). `compose.yaml` defaults to Mixtral 8x7B NIM for Brev L40S deploy. Consolidated docs live at `data/scratch/hackathon-smithsonian/{system-design,deck-v10-outline,doc-status}.md`; older artifacts in `archive/`. Started a `code/governance/` module (ledger, prompt_template, __init__) — **superseded by pivot, awaiting user OK to delete**.
+Sprint shipped v0.2.0 → v0.8.0 in 7 atomic commits on local `main` (push pending — no GitHub creds on this WSL distro). Closed RCT-001, RCT-003, RCT-004, RCT-008, RCT-008b, RCT-009, GOV-001 (apexlon side, separate repo). RCT-002 + RCT-006 are scaffolded as code; the Milvus ingest run + study run are RCT-002b. Foundation docs (`adr.md`, `changelog.md`, `backlog.md`, `repo-bridge.md`, `system-design.md`) live at project root and are mutually consistent. `gpt-rct` Custom GPT paste-ready content at `code/governance/gpt-rct-instructions.md`.
 
 ## Next
-1. **Delete `code/governance/`** (now dead weight) once user confirms.
-2. **Add `POST /lesson` to `code/chain_server/server.py`** (~50 lines): takes `{essential_question, grade_band, duration_minutes}`, calls `chains.retrieve_evidence_triad`, builds prompt, calls Mistral, returns JSON.
-3. **Add `app/modules/executor_rct.py` to apexlon** (`/mnt/c/Users/kjfle/Workspace/apexlon`) modeled on `executor_llm.py` — calls R-CT `/lesson` over HTTP, populates `obj.outputs`.
-4. **Duplicate `gpt-ledger` Custom GPT in OpenAI GPT Builder → `gpt-rct`** with R-CT-specific Instructions; reuse apexlon Cloudflare tunnel + auth.
+1. **Push** — `git push origin main` from a terminal that has credentials. 7 commits queued.
+2. **RCT-002b** — restart chain_server, run `code/scripts/helpers/ingest_nara_pages.py` to populate `rc_nara_pages` collection, then `study_nara_comparison.py` to generate the comparison-study report (RCT-006 unblocks immediately).
+3. **GOV-002** — paste `code/governance/gpt-rct-instructions.md` into OpenAI GPT Builder. Set `RCT_URL` + `RCT_API_KEY` on apexlon and chain_server (handshake). Smoke-test the round-trip → closes RCT-010.
 
 ## Context
-- **Pivot:** governance, ledger, KPI scoring, prompt-tailoring all stay in apexlon. R-CT is pure retrieval+generation. Apexlon's existing 5-dimension OECD scorers, append-only ledger, Custom GPT, and Cloudflare-tunnel pattern are reused as-is.
-- **Demo target:** Brev L40S box `funny-rose-catfish`. Claude Code is installed there (Node 20 via nvm); project cloned at `~/workbench-example-hybrid-rag`. Run NIM via `compose.yaml`, switch chat UI Mode=Microservice.
-- **NVIDIA_API_KEY is on staging tier** (`stg/...` model prefix, Mistral-7B 404s). Mixtral 8x22B works for cloud, Mixtral 8x7B NIM works for microservice.
-- **User preferences (memory):** lowercase-kebab for new files; never trigger RAG ingest/upload without explicit "go".
-- **Submission deadline 2026-05-04 has passed** — work now targets the **2026-06-17 finale**, not the deck submission.
+- **Pre-commit hook** is shipped but **not installed locally**. Run `bash code/scripts/git-hooks/install.sh` to dogfood it; until then changelog discipline is on Claude/contributor.
+- **Server-side equivalent** (`.github/workflows/check-changelog.yml`) ships in v0.8.0; takes effect on next push to GitHub.
+- **Brev instance `funny-rose-catfish` is gone**; `compose.yaml` still defaults to L40S Mixtral 8x7B NIM. Provision a fresh box when ready.
+- **Apexlon** has its own ADR/CHANGELOG/BACKLOG (uppercase, different repo). GOV-001 landed there with 6 passing tests; apexlon's docs were NOT synced by this sprint — that's a follow-up the user can drive.
+- **System-design.md moved** from `data/scratch/` to project root in v0.7.0 — old links may need updating in any external references.
+- **memory rule:** every commit drives a version roll; doc-sync (adr/changelog/backlog) happens before commit, not after.
