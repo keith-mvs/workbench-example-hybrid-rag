@@ -29,6 +29,32 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.3.0] — 2026-05-07
+
+Page-level NARA scaffold. RCT-002 part 1 of 2 — code in place, ready to
+ingest. Actual ingest run + verification deferred to RCT-002b.
+
+### Added
+
+- **`chains.get_vector_index(collection_name=None)`** now takes an optional
+  collection_name parameter. Default behavior (no arg) is unchanged: hits
+  the `llamalection` default collection. Pass a name to address a separate
+  per-corpus index. `@lru_cache` keys per-name. Closes ADR-008's prerequisite.
+- **`code/scripts/helpers/ingest_nara_pages.py`** — standalone ingest script
+  that reads `nara_pension_pages.jsonl`, filters to the case-bundle scope
+  (Knox / Wayne / N. Greene + widow / petition / pension), and inserts into
+  a separate Milvus collection `rc_nara_pages`. Sets up its own service
+  context (chain_server doesn't share with subprocess). Flags: `--max-rows`,
+  `--filter-name` (repeatable), `--batch-size`, `--drop-first`, `--dry-run`.
+  Does not touch `llamalection`.
+
+### Changed
+
+- **ADR-008 status:** `Proposed` → `Accepted (in progress)`. Code is ready;
+  ingest run is the remaining step.
+
+---
+
 ## [0.2.0] — 2026-05-07
 
 The apexlon-pivot bridge work: R-CT exposes a structured lesson-generation

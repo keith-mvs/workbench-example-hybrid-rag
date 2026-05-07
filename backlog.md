@@ -13,7 +13,8 @@ IDs are append-only (never reuse, never renumber).
 
 | ID | Title | Status | Priority | Owner | Created | Updated | Notes / Cross-refs |
 |---|---|---|---|---|---|---|---|
-| RCT-002 | Build `rc_nara_pages` Milvus collection (page-level NARA) | open | P2 | claude | 2026-05-06 | 2026-05-06 | Patch `chains.get_vector_index(collection_name=)`. Ingest from `nara_pension_pages.jsonl` filtered to case-bundle scope. ADR-008. |
+| RCT-002 | Build `rc_nara_pages` Milvus collection (page-level NARA) — *part 1 of 2 done in v0.3.0; ingest run pending* | in-progress | P2 | claude | 2026-05-06 | 2026-05-07 | `chains.get_vector_index(collection_name=)` patched; `ingest_nara_pages.py` written. RCT-002b is the actual ingest run. ADR-008. |
+| RCT-002b | Run `ingest_nara_pages.py` against Milvus | open | P2 | claude | 2026-05-07 | 2026-05-07 | Inside the Workbench container with api-env python. ~1500 rows × case-bundle filter. Frees `RCT-006` (comparison study). |
 | GOV-002 | Duplicate `gpt-ledger` Custom GPT → `gpt-rct` | open | P0 | user | 2026-05-06 | 2026-05-06 | OpenAI GPT Builder. Reuse apexlon Cloudflare tunnel. Update Instructions to teach lesson-request shape. Action item for user (requires their OpenAI account). |
 | OPS-001 | Provision Brev L40S + run `docker compose up local-nim` | in-progress | P0 | user | 2026-05-06 | 2026-05-06 | Brev box `funny-rose-catfish` provisioned. Claude Code installed. Project cloned. NIM compose pull pending. |
 | OPS-002 | NGC API key on staging vs production tier | blocked | P1 | user | 2026-05-06 | 2026-05-06 | Current key is staging — Mistral 7B v0.3 returns 404, only Mixtral 8x22B is provisioned. Mitigated by ADR-004 (Microservice mode bypasses cloud entirely). Resolution: NVIDIA support / NGC web console. |

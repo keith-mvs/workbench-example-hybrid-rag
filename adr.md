@@ -255,8 +255,8 @@ machines, HTTP/JSON). Tracked as RCT-003 / RCT-004.
 
 ## ADR-008 — Page-level NARA as a separate Milvus collection (rc_nara_pages)
 
-- **Status:** Proposed
-- **Timestamp:** 2026-05-06
+- **Status:** Accepted (in progress) — code landed in v0.3.0, ingest run pending (RCT-002b)
+- **Timestamp:** 2026-05-06 (proposed) · 2026-05-07 (status change)
 
 **Context.** File-level NARA chunks (current `llamalection`) preserve
 document context but make page-precise citation hard. Page-level NARA gives

@@ -168,10 +168,19 @@ def get_embedding_model() -> LangchainEmbedding:
     return LangchainEmbedding(hf_embeddings)
 
 @lru_cache
-def get_vector_index() -> VectorStoreIndex:
-    """Create the vector db index."""
+def get_vector_index(collection_name: Optional[str] = None) -> VectorStoreIndex:
+    """Create the vector db index.
+
+    `collection_name=None` (default) connects to LlamaIndex's default Milvus
+    collection (`llamalection`) — the historical single-corpus index. Pass a
+    name (e.g. ``"rc_nara_pages"``) to address a separate per-corpus index.
+    Per-name results are lru-cached.
+    """
     config = get_config()
-    vector_store = MilvusVectorStore(uri=config.milvus, dim=1024, overwrite=False)
+    kwargs: dict = {"uri": config.milvus, "dim": 1024, "overwrite": False}
+    if collection_name:
+        kwargs["collection_name"] = collection_name
+    vector_store = MilvusVectorStore(**kwargs)
     #vector_store = SimpleVectorStore()
     return VectorStoreIndex.from_vector_store(vector_store)
 
