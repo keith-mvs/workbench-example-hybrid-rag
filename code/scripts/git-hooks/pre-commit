@@ -1,0 +1,41 @@
+#!/bin/bash
+# Pre-commit hook for R-CT — enforces the project rule that every commit
+# drives a version roll.
+#
+# Rule (from changelog.md preamble): every commit on `main` updates
+# changelog.md, moving entries from [unreleased] into a new versioned
+# section. This hook fails the commit if changelog.md is not in the
+# staged set.
+#
+# Override with `git commit --no-verify` when intentional (rare).
+
+set -e
+
+staged=$(git diff --cached --name-only)
+if [ -z "$staged" ]; then
+    exit 0
+fi
+
+if echo "$staged" | grep -qE '^changelog\.md$'; then
+    exit 0
+fi
+
+# Allow .git/-only changes (rebase artifacts) without changelog
+if echo "$staged" | grep -vqE '^\.git'; then
+    cat >&2 <<EOF
+pre-commit blocked: changelog.md was not staged.
+
+Project rule: every commit on main drives a version roll. Add an entry to
+changelog.md (move from [unreleased] to a new versioned section, or roll
+PATCH for doc-only changes) and re-stage:
+
+    git add changelog.md
+    git commit ...
+
+Or override intentionally with --no-verify (rare; will create drift).
+
+Staged files in this commit:
+$(echo "$staged" | sed 's/^/  /')
+EOF
+    exit 1
+fi

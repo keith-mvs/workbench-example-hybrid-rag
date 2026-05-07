@@ -29,6 +29,29 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.5.0] — 2026-05-07
+
+Closes RCT-008 — client-side git pre-commit hook that enforces the
+"every commit drives a version roll" rule.
+
+### Added
+
+- **`code/scripts/git-hooks/pre-commit`** — bash pre-commit hook. Fails
+  the commit if `changelog.md` is not in the staged set. Override with
+  `git commit --no-verify` when intentional.
+- **`code/scripts/git-hooks/install.sh`** — idempotent symlink installer
+  into `.git/hooks/`. Run once after cloning.
+- **`code/scripts/git-hooks/README.md`** — documents the rule and the
+  install dance.
+
+### Notes
+
+- This is **client-side** enforcement. A server-side workflow under
+  `.github/workflows/check-changelog.yml` would catch contributor commits
+  too; deferred until we add a CI surface to the repo.
+
+---
+
 ## [0.4.0] — 2026-05-07
 
 Comparison-study harness for RCT-006 (file-level vs page-level NARA).
