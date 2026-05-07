@@ -29,6 +29,32 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.4.0] — 2026-05-07
+
+Comparison-study harness for RCT-006 (file-level vs page-level NARA).
+Code-only — actual run produces the report once `rc_nara_pages` is
+ingested (RCT-002b).
+
+### Added
+
+- **`code/scripts/helpers/study_nara_comparison.py`** — runs a fixed
+  prompt suite against both `llamalection` (NARA-filtered) and
+  `rc_nara_pages`, records top-K retrieval per collection (snippet, score,
+  NAID, page hint), and writes a side-by-side markdown report at
+  `data/scratch/hackathon-smithsonian/nara-comparison-study.md`. Includes
+  a Summary section with mean top-1 similarity, mean retrieval latency,
+  and NAID overlap percentage between collections.
+- **7 default study prompts** baked into the harness, mapped to the demo
+  corpus's strengths (widow petitions, Knox post-war finances, evidence
+  taxonomy queries). Override with `--prompt` (repeatable).
+
+### Changed
+
+- **RCT-006 status:** code in place; run blocked on RCT-002b (page-level
+  ingest needs to populate `rc_nara_pages` first).
+
+---
+
 ## [0.3.0] — 2026-05-07
 
 Page-level NARA scaffold. RCT-002 part 1 of 2 — code in place, ready to
