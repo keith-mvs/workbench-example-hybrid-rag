@@ -1,0 +1,77 @@
+NOTICE — Attribution and modification record
+============================================
+
+This repository is a fork of NVIDIA's `workbench-example-hybrid-rag`
+(https://github.com/NVIDIA/workbench-example-hybrid-rag), released by
+NVIDIA Corporation under the Apache License, Version 2.0. The original
+LICENSE file (LICENSE.txt at the repo root) governs the upstream
+contributions and remains in effect for those portions.
+
+Modifications and additions
+---------------------------
+
+Modifications to the upstream codebase, and new files added in this
+fork, are made for the purpose of a Booz Allen Hamilton-affiliated
+prototype submitted to the **Women in AI × Smithsonian Hackathon
+2026** (Track 1 — Teacher Toolkits & Classroom Innovation).
+
+  Modifications and additions copyright (c) 2026
+  Booz Allen Hamilton Inc. (or per applicable hackathon participation
+  terms; see the Booz Allen WAI Hackathon 2026 participant packet for
+  the operative grant of rights).
+
+Unless individually marked otherwise, modifications and additions in
+this fork are released under the Apache License, Version 2.0 (the same
+license that governs the upstream code). New files carry an SPDX
+identifier in their first line:
+
+    # SPDX-License-Identifier: Apache-2.0
+
+This is a **prototype / demo posture**. Productionization or commercial
+distribution of the contributions in this fork is out of scope for the
+hackathon submission and would warrant a separate licensing review.
+
+What's in scope of the hackathon contribution
+---------------------------------------------
+
+Files created in this fork (non-exhaustive; see `git log` for full
+attribution):
+
+  - adr.md, changelog.md, backlog.md, repo-bridge.md, system-design.md,
+    NOTICE (this file)
+  - code/chain_server/lesson.py
+  - code/governance/ (entire subtree)
+  - code/scripts/helpers/{materialize-rc-sample.py, curate_demo_corpus.py,
+    bulk_ingest_jsonl.py, ingest_nara_pages.py, study_nara_comparison.py}
+  - code/scripts/sync-from-enterprise.sh
+  - code/scripts/git-hooks/ (entire subtree)
+  - .github/workflows/check-changelog.yml
+  - data/scratch/hackathon-smithsonian/ (gitignored — strategy material)
+
+Modified files (Apache 2.0 inherited; modifications marked in commits):
+
+  - code/chain_server/chains.py
+  - code/chain_server/server.py
+  - code/chatui/chat_client.py
+  - compose.yaml
+  - variables.env
+  - .gitignore
+
+External datasets used
+----------------------
+
+The Revolution Crossroads Hugging Face datasets (Smithsonian / LOC /
+NARA) used by this prototype are CC0-1.0 (public domain). See
+`data/scratch/hackathon-smithsonian/dataset-quality-reference.md` for
+verified row counts, sizes, and license citations per dataset.
+
+The `apexlon` codebase (separate repository, not part of this fork) is
+referenced in adr.md and repo-bridge.md as a *pattern source* only —
+no code from apexlon is incorporated into this repository at runtime.
+The 5-dimension OECD KPI rubric and append-only ledger pattern in
+`code/governance/` are independently authored implementations of the
+same conceptual approach, designed to operate without an apexlon
+dependency.
+
+Questions about attribution or licensing should be directed to the
+repository owner or BAH legal counsel.

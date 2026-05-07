@@ -29,6 +29,65 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.10.0] — 2026-05-07
+
+Closes RCT-011 + RCT-012. Ports apexlon's 5-dimension OECD KPI scorer
+into `code/governance/`, adapted for gpt-rct's lesson-generation events
+(not compiled-prompt artifacts). Independent implementation; no
+apexlon runtime dependency.
+
+Also lands ADR-012 + NOTICE file documenting the prototype/demo IP
+posture (Apache 2.0 inheritance + BAH-derivative attribution).
+
+### Added
+
+- **`code/governance/__init__.py`** — `RUBRIC_VERSION`,
+  `WEIGHTS` (uniform 0.20 each), `CONFIDENCE` placeholders, and a small
+  cluster of tunable thresholds (`ROBUSTNESS_MIN_TOP1_SIMILARITY = 0.55`,
+  `TRANSPARENCY_MIN_LESSON_WORDS = 250`, etc.).
+- **`code/governance/scorer.py`** — `score_event(event)` composer.
+  Calls each dimension scorer, aggregates per `WEIGHTS`, returns a
+  result dict with composite + per-dimension scores + rationale +
+  `needs_human_review` flag (sensitive-keyword + low-fairness +
+  5%-random sampling, mirroring apexlon).
+- **`code/governance/dimensions/auditability.py`** (~75 lines) —
+  request_id presence, Evidence Triad completeness, source URLs on all
+  retrieved chunks, model id recorded, ledger event_id present.
+- **`code/governance/dimensions/transparency.py`** (~80 lines) —
+  citation count, lesson word count in band, markdown headings present,
+  activity-language hits, model pinned to a specific version.
+- **`code/governance/dimensions/robustness.py`** (~75 lines) —
+  triad non-empty, top-1 similarity above floor, lesson content present,
+  activity durations sum to requested duration_minutes, generation
+  latency sane.
+- **`code/governance/dimensions/fairness.py`** (~95 lines) — modern PII
+  in the question, demographic-targeting framing in the question (only
+  flags assumes-a-premise framings, not "Black soldiers" historical
+  questions), geographic spread across triad, rank/role balance,
+  historical-language flagged in the lesson.
+- **`code/governance/dimensions/reproducibility.py`** (~80 lines) —
+  model versioned (not just family), embedding model recorded, sampling
+  params recorded, seed field present, retrieved chunks have stable
+  IDs (NAID/EDAN/LCCN/doc_id).
+- **`NOTICE`** at repo root — modification record per Apache 2.0 §4(d).
+  Enumerates BAH-derivative files vs Apache 2.0 inherited files.
+- **ADR-012** — "Prototype/demo IP posture: Apache 2.0 inheritance +
+  BAH-derivative attribution." Captures the minimum-ceremony approach
+  appropriate for hackathon prototype scope.
+
+### Notes
+
+- Each new `.py` file carries an SPDX header
+  (`# SPDX-License-Identifier: Apache-2.0`) plus a one-line BAH-
+  derivative attribution.
+- Wiring into `chain_server/lesson.py` is **NOT** in this version —
+  that's RCT-014 / v0.12.0. The scorer is reviewable as code today;
+  the integration point comes after the ledger lands (v0.11.0).
+- Calibration confidence numbers in `__init__.py:CONFIDENCE` are v1
+  placeholders. Empirical recompute is RCT-018 (deferred).
+
+---
+
 ## [0.9.3] — 2026-05-07
 
 Git/GitHub housekeeping: drop the local NVIDIA upstream remote, queue the

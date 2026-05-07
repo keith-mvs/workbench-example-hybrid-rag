@@ -407,3 +407,68 @@ abbreviation in code/comments where space is tight.
 (port the 5-dimension scorer), RCT-013 (port the ledger), RCT-014 (wire
 into /lesson), RCT-015 (rewrite gpt-rct-instructions.md), RCT-016
 (Cloudflare tunnel reconfig).
+
+---
+
+## ADR-012 — Prototype/demo IP posture: Apache 2.0 inheritance + BAH-derivative attribution
+
+- **Status:** Accepted
+- **Timestamp:** 2026-05-07
+
+**Context.** This repo is a fork of NVIDIA's `workbench-example-hybrid-rag`
+(Apache 2.0). The contributions in this fork are made for a hackathon
+prototype/demo, not for commercial productionization. The user asked
+2026-05-07 whether the fork was "broken" and whether licensing aligns
+with BAH-derivative work.
+
+**Decision.** Stay in the fork. Apply a *minimum-ceremony* IP posture
+appropriate for prototype/demo scope:
+
+1. **Apache 2.0 LICENSE.txt** stays at the repo root unchanged. NVIDIA's
+   contributions remain Apache 2.0 in perpetuity (we cannot re-license
+   their code).
+2. **Modifications and new files release under Apache 2.0** — the same
+   license — with an SPDX header on every new code file:
+   `# SPDX-License-Identifier: Apache-2.0`. This keeps the licensing
+   coherent across the codebase; downstream users see a single license.
+3. **A NOTICE file at the repo root** records the modification trail:
+   modifications copyright (c) 2026 Booz Allen Hamilton (per applicable
+   hackathon participation terms), enumerated by file path, with the
+   prototype-scope caveat. Apache 2.0 §4(d) explicitly anticipates this
+   pattern.
+4. **Apexlon stays referenced as pattern-source only** (per ADR-011) —
+   no apexlon code is incorporated, so apexlon's licensing doesn't enter
+   this repo's IP graph.
+
+**Technical Rationale.**
+- Apache 2.0 is permissive enough that BAH-asserting copyright on
+  derivatives is straightforward — preserve upstream notices and add a
+  NOTICE entry for the modification.
+- A clean-room extraction (Option B from the 2026-05-07 discussion) is
+  deferred until productionization is on the table; it would cost
+  several days of refactor work that doesn't change the demo's
+  behavior.
+- Submodule vendoring (Option C) adds operational friction without IP
+  benefit at this stage.
+- The hackathon participant-packet grant of rights is the operative
+  legal frame; the SPDX + NOTICE pattern surfaces the BAH-derivative
+  posture for any future review without committing to a particular
+  downstream licensing path.
+
+**Consequences.**
+- All new code files in this fork carry the SPDX header. Existing files
+  authored earlier in the session pre-date this ADR; backfilling them
+  is a P3 housekeeping task, not a blocker.
+- If BAH later decides to productionize, the cleanest path is a
+  clean-room extraction (Option B) into a new BAH-owned repo with a
+  proprietary license. The NOTICE file makes that boundary easy to
+  draw because each contribution is explicitly attributed.
+- The fork-detach (OPS-006, GitHub support ticket) and rename
+  (OPS-005) are independent of this ADR and proceed as planned.
+
+**Out of scope of this ADR.**
+- Any determination of whether specific contributions vest with BAH,
+  the contributor, or the hackathon organizer. That's the participant
+  packet's job, not ours.
+- Any opinion on whether Apache 2.0 is the right *long-term* license.
+  Reopen as a new ADR if/when productionization is proposed.
