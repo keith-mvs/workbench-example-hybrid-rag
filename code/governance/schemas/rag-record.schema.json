@@ -1,0 +1,194 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://revolutioncrossroads.org/schemas/rag-record.json",
+  "title": "RAG Record Schema",
+  "description": "Schema for JSONL records used in RAG/LLM ingestion for Revolutionary War era datasets",
+  "type": "object",
+  "required": ["source", "id", "text", "meta", "version"],
+  "properties": {
+    "source": {
+      "type": "string",
+      "description": "Dataset source identifier",
+      "enum": [
+        "nara_pension_files",
+        "loc_chronam_original",
+        "loc_chronam_enhanced",
+        "smithsonian_collections",
+        "smithsonian_collections_text_labeled"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "description": "Stable unique identifier for this record (NAID, Web_URL, EDANid)",
+      "minLength": 1
+    },
+    "text": {
+      "type": "string",
+      "description": "Primary text content for embedding and retrieval",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version for data lineage tracking",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0"
+    },
+    "extraction_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when record was extracted"
+    },
+    "chunk_metadata": {
+      "type": "object",
+      "description": "Chunking information for large documents (optional, for future use)",
+      "properties": {
+        "chunk_id": {
+          "type": "integer",
+          "description": "Chunk sequence number (0-indexed)"
+        },
+        "total_chunks": {
+          "type": "integer",
+          "description": "Total number of chunks for this document"
+        },
+        "chunk_size": {
+          "type": "integer",
+          "description": "Character/token count of this chunk"
+        },
+        "overlap": {
+          "type": "integer",
+          "description": "Character overlap with previous chunk"
+        }
+      }
+    },
+    "meta": {
+      "type": "object",
+      "description": "Metadata specific to the source dataset",
+      "properties": {
+        "NAID": {
+          "type": "string",
+          "description": "National Archives Identifier (NARA only)"
+        },
+        "naraURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to NARA catalog (NARA only)"
+        },
+        "title": {
+          "type": "string",
+          "description": "Document or object title"
+        },
+        "pageURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to specific page image (for citation)"
+        },
+        "pdfURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to PDF document (for citation)"
+        },
+        "mediaURLs": {
+          "type": "string",
+          "description": "Image URLs (SI only, for multimodal RAG)"
+        },
+        "newspaper_title": {
+          "type": "string",
+          "description": "Newspaper name (LOC only)"
+        },
+        "place_of_publication": {
+          "type": "string",
+          "description": "Publication location (LOC only)"
+        },
+        "issue_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Publication date (LOC only)"
+        },
+        "lccn": {
+          "type": "string",
+          "description": "Library of Congress Control Number (LOC only)"
+        },
+        "collectionsURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to Smithsonian collection page (SI only)"
+        },
+        "EDANid": {
+          "type": "string",
+          "description": "Enterprise Data Access Number (SI only)"
+        },
+        "unitCode": {
+          "type": "string",
+          "description": "Smithsonian unit code (e.g., NMAH, NPG) (SI only)"
+        },
+        "image_text": {
+          "type": "string",
+          "enum": ["has-text", "no-text", "unsure"],
+          "description": "Image text classification from BAH ML model (Smithsonian only)"
+        },
+        "transcriptionText": {
+          "type": "string",
+          "description": "Human-verified transcription (NARA only)"
+        },
+        "transcriptionDate": {
+          "type": "string",
+          "format": "date",
+          "description": "Transcription completion date (NARA only)"
+        },
+        "logicalDate": {
+          "type": "string",
+          "description": "Historical date reference (NARA only)"
+        },
+        "content_type": {
+          "type": "string",
+          "enum": ["text", "image", "table", "mixed"],
+          "description": "Content modality for multimodal RAG routing"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "source": "nara_pension_files",
+      "id": "111769430",
+      "text": "To the Secretary of War... William Woodbury... served in the Revolutionary War...",
+      "meta": {
+        "NAID": "111769430",
+        "naraURL": "https://catalog.archives.gov/id/111769430",
+        "title": "Revolutionary War Pension and Bounty Land Warrant Application Files; Compiled Military Service Records, Wm Woodbury, Mass.",
+        "pageURL": "https://catalog.archives.gov/OpaAPI/media/111769430/content/arcmedia/revolutionary-war-pensions/00-unassigned-applications-2001-2100/M804_01910_Woodbury_William/00001.jpg",
+        "transcriptionText": "State of Massachusetts...",
+        "transcriptionDate": "2024-11-20",
+        "logicalDate": "1818-04-08"
+      }
+    },
+    {
+      "source": "loc_chronam_enhanced",
+      "id": "https://www.loc.gov/resource/sn82014385/1809-07-08/ed-1/?sp=1",
+      "text": "THE DELAWARE GAZETTE... Notice is hereby given...",
+      "meta": {
+        "newspaper_title": "The Delaware gazette",
+        "place_of_publication": "Wilmington [Del.]",
+        "issue_date": "1809-07-08",
+        "lccn": "sn82014385",
+        "Page": "1",
+        "pdf_url": "https://tile.loc.gov/image-services/iiif/service:ndnp:deu:batch_deu_snowman_ver01:data:sn82014385:00271741728:1809070801:0429/full/pct:100/0/default.jpg"
+      }
+    },
+    {
+      "source": "smithsonian_collections_text_labeled",
+      "id": "edanmdm:nmah_556492",
+      "text": "1800 - 1825 Dove-Cator Families 'American Eagle' Quilt",
+      "meta": {
+        "unitCode": "NMAH",
+        "title": "1800 - 1825 Dove-Cator Families 'American Eagle' Quilt",
+        "collectionsURL": "https://collections.si.edu/search/record/edanmdm:nmah_556492",
+        "EDANid": "edanmdm:nmah_556492",
+        "mediaURLs": "https://ids.si.edu/ids/deliveryService?id=NMAH-AHB2013q07740",
+        "image_text": "text"
+      }
+    }
+  ]
+}

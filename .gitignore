@@ -21,6 +21,9 @@ data/scratch/*
 data/sources/*
 !data/sources/.gitkeep
 
+# Session handoff lives at .remember/remember.md (tracked); logs are local noise.
+.remember/logs/
+
 # Byte-compiled / optimized / DLL files
 
 # Temp directories, notebooks created by jupyterlab

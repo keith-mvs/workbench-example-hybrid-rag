@@ -22,11 +22,12 @@ from pathlib import Path
 from typing import Any, Dict, List
 import tempfile
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import Depends, FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from chain_server import chains
+from chain_server.lesson import LessonRequest, handle_lesson, require_api_key
 
 # create the FastAPI server
 app = FastAPI()
@@ -125,6 +126,17 @@ async def generate_answer(prompt: Prompt) -> StreamingResponse:
                                            prompt.freq_pen,
                                            prompt.pres_pen)
     return StreamingResponse(generator, media_type="text/event-stream")    
+
+
+@app.post("/lesson", dependencies=[Depends(require_api_key)])
+def lesson(req: LessonRequest) -> JSONResponse:
+    """Structured lesson-generation endpoint for upstream callers.
+
+    See chain_server/lesson.py (RCT-003 / RCT-004). Auth is enforced when
+    RCT_API_KEY is set; dev mode (unset) skips auth.
+    """
+    payload = handle_lesson(req)
+    return JSONResponse(content=payload, status_code=200)
 
 
 @app.post("/documentSearch")
