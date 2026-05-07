@@ -29,6 +29,23 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.6.0] — 2026-05-07
+
+GOV-002 prep: paste-ready Custom GPT setup doc. The actual GPT creation
+in OpenAI's GPT Builder is still a user action (we don't have OpenAI
+account credentials).
+
+### Added
+
+- **`code/governance/gpt-rct-instructions.md`** — paste-ready content for
+  the gpt-rct Custom GPT: Name, Description, Conversation Starters,
+  Instructions block, Actions OpenAPI schema, env-var handshake
+  (RCT_URL/RCT_API_KEY on both sides), test queries, and a publishing
+  checklist. Surfaces the OECD KPI scores + ledger hash in a "trust
+  panel" section the GPT renders below each lesson.
+
+---
+
 ## [0.5.0] — 2026-05-07
 
 Closes RCT-008 — client-side git pre-commit hook that enforces the
