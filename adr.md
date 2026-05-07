@@ -215,7 +215,7 @@ case-bundle veteran list.
 
 ## ADR-007 — Governance lives in apexlon, not in R-CT (the pivot)
 
-- **Status:** Accepted (supersedes the in-flight `code/governance/` module)
+- **Status:** Superseded by ADR-011 (2026-05-07). Original wording preserved below for audit-trail integrity.
 - **Timestamp:** 2026-05-06
 
 **Context.** Initial design called for porting apexlon's 5-dimension OECD
@@ -340,3 +340,70 @@ because the Python import system requires it.
 use kebab-case. Existing files (`Corpus-specific role assignment.md`,
 `SYSTEM_DESIGN.md`, etc.) were renamed in a one-time pass on 2026-05-06.
 Saved as `feedback_filename_style.md` in the project memory.
+
+---
+
+## ADR-011 — Governance ports into gpt-rct; apexlon stays apexlon
+
+- **Status:** Accepted (supersedes ADR-007)
+- **Timestamp:** 2026-05-07
+
+**Context.** ADR-007 routed governance/scoring/ledger work into apexlon —
+adding R-CT-named knowledge to apexlon's router (`"rct"`, `"lesson"`,
+`"revolution_crossroads"` keywords in `TASK_TYPE_TO_EXECUTOR`), a new
+`executor_rct.py` module that calls R-CT over HTTP, and three R-CT-specific
+env vars (`RCT_URL`, `RCT_API_KEY`, `RCT_INFERENCE_MODE`) in apexlon's
+config. That mutated apexlon — a separate tool with its own purpose — into
+something that knows about R-CT by name. Hard coupling in the wrong
+direction; the user flagged this on 2026-05-07.
+
+**Decision.** Reverse the integration. Apexlon goes back to being a
+generic governance control plane unaware of R-CT. Port the *patterns*
+(5-dimension OECD scorer, append-only chained-SHA-256 ledger, deterministic
+structural checks, OECD-mapped dimension semantics) into this repo at
+`code/governance/`. R-CT does its own governance scoring + ledger
+write inside the `/lesson` request path; the response carries the scores
++ ledger event_id back to the caller (Custom GPT, internal tooling, or a
+future apexlon executor that *opts into* calling R-CT — but apexlon does
+not have to).
+
+Project / product name moving forward is **gpt-rct** — same naming
+convention as apexlon's `gpt-ledger`. The repo on GitHub stays
+`workbench-example-hybrid-rag` (it's a fork of an upstream we don't own);
+internal references migrate to `gpt-rct` over time. R-CT remains a valid
+abbreviation in code/comments where space is tight.
+
+**Technical Rationale.**
+- Apexlon and gpt-rct have meaningful pattern overlap (both want OECD
+  governance) but **different purposes**. Apexlon is a generic LLM/tool
+  orchestration control plane. Gpt-rct is a K-12 lesson builder over a
+  specific corpus. Forcing apexlon to host the lesson-builder's runtime
+  governance bakes wrong-grain coupling that costs more than it saves.
+- Re-porting the apexlon code into gpt-rct's repo keeps both projects
+  independently distributable. Each repo can ship without the other.
+- The "demo the governance" story (3-layer narrative on stage) survives
+  intact — it's now ChatGPT → gpt-rct (with embedded governance + ledger),
+  not ChatGPT → apexlon → R-CT. Loses one network hop; loses zero
+  governance richness.
+- gpt-rct-the-Custom-GPT can still optionally call apexlon as a separate
+  control plane in a future release; that becomes a deployment choice,
+  not a hard dependency.
+
+**Consequences.**
+- The work shipped in v0.2.0–v0.8.1 is mostly reusable. RCT-003 (the
+  `/lesson` endpoint) and RCT-004 (auth) stay as-is. RCT-001 (deleting
+  `code/governance/`) is **walked back** — the module gets re-established
+  in v0.10.0–v0.12.0 with the ported patterns.
+- **Apexlon-side changes** (the agent's executor_rct.py + tests + config +
+  state-machine + router edits) need to be reverted by the user in the
+  apexlon repo. Tracked as an external dependency, not a gpt-rct backlog
+  item. Apexlon is a separate codebase.
+- gpt-rct-instructions.md gets rewritten in v0.13.0 to point at gpt-rct's
+  `/lesson` directly (not apexlon's `/run_control_plane`).
+- New ADR-007 reads "Superseded by ADR-011" but the original text is
+  preserved for the audit trail. Don't delete past ADRs; supersede.
+
+**Related backlog:** RCT-011 (re-establish code/governance/), RCT-012
+(port the 5-dimension scorer), RCT-013 (port the ledger), RCT-014 (wire
+into /lesson), RCT-015 (rewrite gpt-rct-instructions.md), RCT-016
+(Cloudflare tunnel reconfig).

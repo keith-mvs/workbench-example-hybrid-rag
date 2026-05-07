@@ -29,6 +29,39 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.9.0] — 2026-05-07
+
+Course-correction: governance ports into this repo (gpt-rct) modeled on
+apexlon's patterns; apexlon goes back to being a separate tool. ADR-007
+is superseded by ADR-011. Project name moving forward is **gpt-rct**.
+
+### Added
+
+- **ADR-011** — "Governance ports into gpt-rct; apexlon stays apexlon."
+  Captures the reversal of ADR-007, the rationale (apexlon is a separate
+  tool, hard-coupling was wrong-grain), the new naming convention
+  (gpt-rct), and the related backlog items (RCT-011 through RCT-016).
+
+### Changed
+
+- **ADR-007 status** → "Superseded by ADR-011 (2026-05-07)." Original
+  decision text preserved for audit-trail integrity (don't delete past
+  ADRs; supersede).
+- **Project / product name** moving forward: **gpt-rct** (matches
+  apexlon's `gpt-ledger` naming convention). Existing R-CT references in
+  code and code-comments stay as-is; new docs use gpt-rct.
+
+### Notes
+
+- Apexlon-side rollback (revert `executor_rct.py` + tests + config +
+  state-machine + router edits in `/mnt/c/Users/kjfle/Workspace/apexlon`)
+  is the user's responsibility. Tracked as an external dependency, not
+  a gpt-rct backlog item.
+- The `/lesson` endpoint and X-API-Key auth (v0.2.0) stay as-is. Future
+  versions add governance scoring + ledger write to the same endpoint.
+
+---
+
 ## [0.8.1] — 2026-05-07
 
 Sprint handoff. Updates `.remember/remember.md` with the v0.2.0 → v0.8.0

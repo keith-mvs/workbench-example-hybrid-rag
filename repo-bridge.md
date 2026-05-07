@@ -19,14 +19,24 @@ Local clone of the enterprise repo lives at:
 
 ## Why two repos
 
-- The R-CT engineering work is forked from NVIDIA's open Workbench example and
-  needs to stay forkable / public-runnable for the hackathon demo.
+- The gpt-rct engineering work is forked from NVIDIA's open Workbench example
+  and needs to stay forkable / public-runnable for the hackathon demo.
 - The strategy + research material was seeded under fleming-keith because that
   is the BAH-affiliated identity for the hackathon — even though the code was
   built on a personal box. Moving everything into one repo would either expose
   enterprise context publicly, or hide engineering work from non-collaborators.
 - Splitting lets each repo carry its own license, visibility, and audit trail
   without compromising the other.
+
+## Apexlon: a third repo, referenced as inspiration only
+
+`/mnt/c/Users/kjfle/Workspace/apexlon` is a **separate tool** built for a
+different purpose (a generic LLM/tool-orchestration control plane). gpt-rct
+draws on apexlon's *patterns* — the 5-dimension OECD scorer, append-only
+chained-SHA-256 ledger, state-machine module contract — but does **not**
+depend on apexlon at runtime. ADR-011 is the canonical statement of this
+boundary. Apexlon stays unmodified by gpt-rct work; gpt-rct stays runnable
+without apexlon deployed.
 
 ## What crosses the boundary
 

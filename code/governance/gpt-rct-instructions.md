@@ -1,10 +1,18 @@
 # gpt-rct — Custom GPT setup (GOV-002 deliverable)
 
-Paste-ready content for OpenAI's GPT Builder. Duplicates apexlon's
-`gpt-ledger` Custom GPT and points the Actions panel at the same
-`/run_control_plane` endpoint, with `task_type` set to `"lesson"` so
-apexlon's router dispatches to the new `executor_rct` module
-(see `/mnt/c/Users/kjfle/Workspace/apexlon/app/modules/executor_rct.py`).
+> **STATUS — 2026-05-07 (v0.9.0):** This file is **stale** as of ADR-011.
+> The original design routed the Custom GPT through apexlon's
+> `/run_control_plane`; the new design (per ADR-011) calls gpt-rct's
+> `/lesson` endpoint directly, with governance scoring + ledger logging
+> happening inside gpt-rct itself. Full rewrite tracked as **RCT-015** /
+> v0.13.0. Keep this file for reference until then; do not paste into
+> GPT Builder yet — the OpenAPI surface and the Instructions block both
+> need to change.
+
+Paste-ready content for OpenAI's GPT Builder. **(Pending rewrite per
+RCT-015 — see status note above.)** Originally drafted to duplicate
+apexlon's `gpt-ledger` Custom GPT and route through apexlon, that design
+is superseded.
 
 ---
 
