@@ -81,8 +81,8 @@ authoritative schema travels with the engineering code.
    fleming-keith credentials):
    `git clone https://github.com/fleming-keith/wai-hackathon-2026.git ~/wai-hackathon-2026`
 3. Run sync once: `bash code/scripts/sync-from-enterprise.sh`
-4. Read in this order: `system-design.md`, `adr.md`, `backlog.md`,
-   `data/scratch/hackathon-smithsonian/track1-hackathon-facts.md`.
+4. Read in this order: `system-design.md` (project root), `adr.md`,
+   `backlog.md`, `data/scratch/hackathon-smithsonian/track1-hackathon-facts.md`.
 
 ## When the enterprise repo goes back to private
 

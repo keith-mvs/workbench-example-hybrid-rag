@@ -29,6 +29,30 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.7.0] — 2026-05-07
+
+Moves `system-design.md` to the project root (was in gitignored scratch)
+and refreshes it for the v0.3.0 multi-collection support + RCT-002 +
+RCT-006 work. Closes RCT-009.
+
+### Changed
+
+- **`system-design.md` moved**: `data/scratch/hackathon-smithsonian/` →
+  project root. Now tracked in git alongside `adr.md`, `changelog.md`,
+  `backlog.md`. Subject to the same version-roll rule.
+- **`system-design.md` §5.3** rewritten to reflect:
+  - `chains.get_vector_index(collection_name=)` multi-collection support
+    (v0.3.0)
+  - `rc_nara_pages` collection scaffold (v0.3.0; ingest run is RCT-002b)
+  - Comparison-study harness (`study_nara_comparison.py`, v0.4.0)
+  - Future per-corpus splits framed as same pattern, deferred until study
+    validates
+- **`repo-bridge.md`** onboarding-order list updated to point at the new
+  location.
+- **`doc-status.md`** (in scratch) annotated to note the move.
+
+---
+
 ## [0.6.0] — 2026-05-07
 
 GOV-002 prep: paste-ready Custom GPT setup doc. The actual GPT creation
