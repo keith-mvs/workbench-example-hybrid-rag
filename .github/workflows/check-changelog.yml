@@ -1,0 +1,59 @@
+# Server-side mirror of the client-side pre-commit hook (RCT-008b).
+# Fails the workflow if a push or PR doesn't touch changelog.md, enforcing
+# the project rule documented in changelog.md (every commit drives a
+# version roll). Override with `[skip changelog]` in the commit message
+# for genuine doc/CI-only changes.
+
+name: check-changelog
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+  changelog-updated:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip changelog]')"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine base ref
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "ref=origin/${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
+          else
+            # On push to main, compare against the parent of the head commit
+            echo "ref=HEAD~1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Diff vs base
+        id: diff
+        run: |
+          base="${{ steps.base.outputs.ref }}"
+          changed=$(git diff --name-only "$base"...HEAD || git diff --name-only "$base" HEAD)
+          echo "changed_files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$changed" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          if echo "$changed" | grep -qE '^changelog\.md$'; then
+            echo "changelog_updated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changelog_updated=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fail if changelog not updated
+        if: steps.diff.outputs.changelog_updated == 'false'
+        run: |
+          echo "::error::changelog.md was not updated."
+          echo ""
+          echo "Project rule (see changelog.md preamble): every commit on main drives a version roll."
+          echo "Add an entry to changelog.md (move from [unreleased] to a new versioned section, or roll PATCH for doc-only changes)."
+          echo "Override intentionally with the literal string [skip changelog] in the commit message."
+          echo ""
+          echo "Files changed in this push:"
+          echo '${{ steps.diff.outputs.changed_files }}' | sed 's/^/  /'
+          exit 1

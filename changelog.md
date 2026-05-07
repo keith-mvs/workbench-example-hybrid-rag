@@ -29,6 +29,26 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.8.0] — 2026-05-07
+
+Closes RCT-008b — server-side GitHub Action mirror of the client-side
+changelog-update pre-commit hook from v0.5.0.
+
+### Added
+
+- **`.github/workflows/check-changelog.yml`** — runs on push to `main`
+  and on PR targeting `main`. Fails the workflow if `changelog.md` was
+  not touched in the diff. Override path: literal `[skip changelog]` in
+  the commit message (rare; genuine CI-only changes).
+
+### Notes
+
+- The override token (`[skip changelog]`) keeps emergency commits
+  possible. Drift created via override is a lint-bot follow-up, not a
+  hard block.
+
+---
+
 ## [0.7.0] — 2026-05-07
 
 Moves `system-design.md` to the project root (was in gitignored scratch)
