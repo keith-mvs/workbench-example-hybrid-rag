@@ -1,9 +1,45 @@
-# Create your compose file. To learn more, please visit
-# https://docs.docker.com/reference/compose-file/
+# Hybrid RAG local inference (Microservice mode).
+#
+# Launches an NVIDIA NIM container that the chat UI reaches via Mode = "Microservice"
+# pointed at http://localhost:8000. Use this to bypass the Cloud (NVIDIA API
+# Catalog) path when its streaming is unstable on your API key tier.
+#
+# REQUIREMENTS:
+#   - NVIDIA_API_KEY (= your NGC API key, "nvapi-..." prefix) exported in the
+#     shell that runs `docker compose up`. This file no longer hardcodes it.
+#   - One-time host login so docker can pull from nvcr.io:
+#       docker login nvcr.io --username '$oauthtoken' --password "$NVIDIA_API_KEY"
+#   - GPU with enough VRAM for the selected NIM (see model comments below).
+#
+# USAGE:
+#   docker compose -f compose.yaml up -d local-nim
+#   docker compose -f compose.yaml logs -f local-nim     # watch model load
+#   curl http://localhost:8000/v1/models                  # ready-check
+#   docker compose -f compose.yaml down
+
 services:
   local-nim:
-    image: nvcr.io/nim/meta/llama-3.1-8b-instruct:latest
+    # ---- DEFAULT: Mixtral 8x7B Instruct v0.1 ---------------------------------
+    # Same Mistral family as the Cloud Mixtral 8x22B path, just self-hosted and
+    # stable. ~28 GB VRAM in FP16 — fits Brev L40S (48 GB) with comfortable
+    # headroom. Will NOT fit a single RTX 2080 Ti (11 GB).
+    image: nvcr.io/nim/mistralai/mixtral-8x7b-instruct-v01:latest
+    #
+    # ---- Alternatives (uncomment ONE to switch) ------------------------------
+    # # Llama 3.1 70B Instruct, ~40 GB INT4 — tight on L40S, more capable
+    # image: nvcr.io/nim/meta/llama-3.1-70b-instruct:latest
+    #
+    # # Llama 3.1 8B Instruct, ~16 GB FP16 — fits anywhere, fastest first-token
+    # image: nvcr.io/nim/meta/llama-3.1-8b-instruct:latest
+    #
+    # # Mistral 7B Instruct v0.3, ~14 GB FP16
+    # image: nvcr.io/nim/mistralai/mistral-7b-instruct-v03:latest
+    #
+    # NOTE: Mixtral 8x22B does NOT fit even quantized on a single L40S
+    # (~70 GB INT4 minimum). Stay on Cloud for that one.
+
     runtime: nvidia
+    shm_size: 16gb
     deploy:
       resources:
         reservations:
@@ -14,12 +50,25 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - type: bind
-        source: /tmp
-        target: /opt/nim/.cache/
+      # Persistent named volume so we don't re-download tens of GB of weights
+      # on every container restart. /tmp was the prior bind target and gets
+      # wiped on host reboot.
+      - nim-cache:/opt/nim/.cache/
     environment:
       - NGC_API_KEY=${NVIDIA_API_KEY:?Error NVIDIA_API_KEY not set}
-      
+    healthcheck:
+      # The NIM serves /v1/models once weights are loaded and the engine is
+      # ready. Cold-start can take 5–10 minutes for large models — start_period
+      # gives it room before the container is marked unhealthy.
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/v1/models || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 30
+      start_period: 600s
+
+volumes:
+  nim-cache:
+
 networks:
   default:
     name: hybrid-rag

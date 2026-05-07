@@ -72,6 +72,13 @@ EMBEDDING_MODEL = "intfloat/e5-large-v2"
 DEFAULT_NUM_TOKENS = 50
 DEFAULT_MAX_CONTEXT = 800
 
+# Model id used when Microservice mode is selected and the UI's nim_model_id
+# field is left blank. Match this to whichever NIM you launch in compose.yaml.
+# Override at runtime with NIM_MODEL_ID without editing this file.
+_DEFAULT_NIM_MODEL = os.environ.get(
+    "NIM_MODEL_ID", "mistralai/mixtral-8x7b-instruct-v0.1"
+)
+
 
 class LimitRetrievedNodesLength(BaseNodePostprocessor):
     """Llama Index chain filter to limit token lengths."""
@@ -247,7 +254,7 @@ def llm_chain_streaming(
 
         start = time.time()
         completion = openai.chat.completions.create(
-          model= nvcf_model_id if inference_mode == "cloud" else ("meta/llama-3.1-8b-instruct" if len(nim_model_id) == 0 else nim_model_id),
+          model= nvcf_model_id if inference_mode == "cloud" else (_DEFAULT_NIM_MODEL if len(nim_model_id) == 0 else nim_model_id),
           temperature=temp,
           top_p=top_p,
           # frequency_penalty=freq_pen,   # Some models have yet to roll out support for these params
@@ -256,7 +263,7 @@ def llm_chain_streaming(
           max_tokens=num_tokens, 
           stream=(inference_mode != "cloud"),
         ) if inference_mode == "cloud" and ("microsoft" in nvcf_model_id or "nemotron" in nvcf_model_id) else openai.chat.completions.create(
-          model= nvcf_model_id if inference_mode == "cloud" else ("meta/llama-3.1-8b-instruct" if len(nim_model_id) == 0 else nim_model_id),
+          model= nvcf_model_id if inference_mode == "cloud" else (_DEFAULT_NIM_MODEL if len(nim_model_id) == 0 else nim_model_id),
           temperature=temp,
           top_p=top_p,
           frequency_penalty=freq_pen,
@@ -340,19 +347,28 @@ def rag_chain_streaming(prompt: str,
         docs = []
         for node in nodes: 
             docs.append(node.get_text())
-        if inference_mode == "cloud" and "llama3" in nvcf_model_id:
+        # Pick a RAG prompt template by model family. Cloud routes off
+        # nvcf_model_id (UI dropdown); microservice routes off nim_model_id
+        # (UI textbox, defaulted to whatever NIM compose.yaml serves).
+        _model_hint = (
+            nvcf_model_id if inference_mode == "cloud"
+            else (nim_model_id or _DEFAULT_NIM_MODEL)
+        ).lower()
+        if "llama-3" in _model_hint or "llama3" in _model_hint or "llama_3" in _model_hint:
             prompt = chat_templates.LLAMA_3_RAG_TEMPLATE.format(context_str=", ".join(docs), query_str=prompt)
-        elif inference_mode == "cloud" and "llama2" in nvcf_model_id:
+        elif "llama-2" in _model_hint or "llama2" in _model_hint:
             prompt = chat_templates.LLAMA_2_RAG_TEMPLATE.format(context_str=", ".join(docs), query_str=prompt)
-        elif inference_mode == "cloud" and "mistral" in nvcf_model_id:
+        elif "mixtral" in _model_hint or "mistral" in _model_hint:
             prompt = chat_templates.MISTRAL_RAG_TEMPLATE.format(context_str=", ".join(docs), query_str=prompt)
-        elif inference_mode == "cloud" and "microsoft" in nvcf_model_id:
+        elif "microsoft" in _model_hint or "phi" in _model_hint:
             prompt = chat_templates.MICROSOFT_RAG_TEMPLATE.format(context_str=", ".join(docs), query_str=prompt)
+        elif "nemotron" in _model_hint or "nvidia" in _model_hint:
+            prompt = chat_templates.NVIDIA_RAG_TEMPLATE.format(context_str=", ".join(docs), query_str=prompt)
         else:
             prompt = chat_templates.GENERIC_RAG_TEMPLATE.format(context_str=", ".join(docs), query_str=prompt)
         start = time.time()
         completion = openai.chat.completions.create(
-          model= nvcf_model_id if inference_mode == "cloud" else ("meta/llama-3.1-8b-instruct" if len(nim_model_id) == 0 else nim_model_id),
+          model= nvcf_model_id if inference_mode == "cloud" else (_DEFAULT_NIM_MODEL if len(nim_model_id) == 0 else nim_model_id),
           temperature=temp,
           top_p=top_p,
           # frequency_penalty=freq_pen,   # Some models have yet to roll out support for these params
@@ -361,7 +377,7 @@ def rag_chain_streaming(prompt: str,
           max_tokens=num_tokens, 
           stream=(inference_mode != "cloud"),
         ) if inference_mode == "cloud" and ("microsoft" in nvcf_model_id or "nemotron" in nvcf_model_id) else openai.chat.completions.create(
-          model=nvcf_model_id if inference_mode == "cloud" else ("meta/llama-3.1-8b-instruct" if len(nim_model_id) == 0 else nim_model_id),
+          model=nvcf_model_id if inference_mode == "cloud" else (_DEFAULT_NIM_MODEL if len(nim_model_id) == 0 else nim_model_id),
           temperature=temp,
           top_p=top_p,
           frequency_penalty=freq_pen,
