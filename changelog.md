@@ -29,6 +29,19 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.9.2] — 2026-05-07
+
+PATCH — backlog row for OPS-004 (GitHub SSH setup) didn't make it into
+v0.9.1's commit due to a mid-edit string-mismatch. Adding it now.
+
+### Changed
+
+- **`backlog.md`** — OPS-004 row added (status: in-progress, owner:
+  user). OPS-003 row updated to point at RCT-016 as the canonical
+  tracking item for the tunnel reconfig after ADR-011.
+
+---
+
 ## [0.9.1] — 2026-05-07
 
 OPS-004 prep — GitHub SSH setup on this WSL distro.
