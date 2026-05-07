@@ -29,6 +29,23 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.9.1] — 2026-05-07
+
+OPS-004 prep — GitHub SSH setup on this WSL distro.
+
+### Changed
+
+- **Git remote** switched from HTTPS to SSH:
+  `git@github.com:keith-mvs/workbench-example-hybrid-rag.git`. Push will
+  work once the user pastes the new ed25519 public key into github.com →
+  Settings → SSH and GPG keys.
+- **Public key fingerprint** (for verification):
+  `SHA256:dEUzu5O//ktMjtc/MybMKJpkebhv5+tNKz6Y5iVprcE`.
+- **OPS-004** in backlog moved from "open" to "in-progress" pending the
+  user's GitHub-side paste.
+
+---
+
 ## [0.9.0] — 2026-05-07
 
 Course-correction: governance ports into this repo (gpt-rct) modeled on
