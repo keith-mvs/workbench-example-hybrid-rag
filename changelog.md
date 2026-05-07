@@ -29,6 +29,26 @@ discipline is contributor-side until then.
 
 ---
 
+## [0.9.3] — 2026-05-07
+
+Git/GitHub housekeeping: drop the local NVIDIA upstream remote, queue the
+repo rename + fork-detach as user actions.
+
+### Changed
+
+- **`upstream` remote removed** locally. Was pointing at
+  `https://github.com/NVIDIA/workbench-example-hybrid-rag` from when the
+  repo was forked. The fork relationship on GitHub itself remains until
+  OPS-006 lands.
+
+### Added
+
+- **OPS-005** — rename GitHub repo to `gpt-rct` (user action).
+- **OPS-006** — detach from NVIDIA fork relationship via GitHub support
+  (user action; not self-serve).
+
+---
+
 ## [0.9.2] — 2026-05-07
 
 PATCH — backlog row for OPS-004 (GitHub SSH setup) didn't make it into
