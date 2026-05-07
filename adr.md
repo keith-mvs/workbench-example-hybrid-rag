@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Booz Allen Hamilton (or per applicable hackathon participation terms). Architecture and design content; not licensed under the Apache 2.0 LICENSE.txt that covers the surrounding code. See ADR-013 + NOTICE. -->
+
 # Architecture Decision Records — R-CT
 
 Append-only log of architecture, design, and process decisions for the
@@ -472,3 +474,64 @@ appropriate for prototype/demo scope:
   packet's job, not ours.
 - Any opinion on whether Apache 2.0 is the right *long-term* license.
   Reopen as a new ADR if/when productionization is proposed.
+
+> **2026-05-07 amendment:** The "modifications and new files release
+> under Apache 2.0" clause is too broad — it accidentally licenses BAH
+> design and architecture documents under Apache 2.0. ADR-013 carves
+> out architecture/design content (adr.md, changelog.md, backlog.md,
+> repo-bridge.md, system-design.md, lesson-builder/control-plane/
+> Custom-GPT design notes) as BAH-proprietary copyright. Code files
+> remain Apache 2.0 for runtime interop. Read ADR-013 for the
+> definitive split.
+
+---
+
+## ADR-013 — Code Apache 2.0; architecture and design docs BAH copyright
+
+- **Status:** Accepted (amends ADR-012)
+- **Timestamp:** 2026-05-07
+
+**Context.** ADR-012 set a "minimum-ceremony" IP posture that licensed
+*all* contributions in this fork under Apache 2.0. The user flagged
+2026-05-07 that this is too broad: NVIDIA's code remains Apache 2.0 (we
+can't and don't try to change that), but BAH-authored *architecture and
+design content* — the lesson-planning approach, control-plane
+governance design, Custom-GPT spec, ledger-and-scoring rubric, ADR
+trail — is proprietary BAH IP, not Apache-licensed.
+
+**Decision.** Split the licensing posture inside this fork along
+content boundaries:
+
+| Content class | License | Examples |
+|---|---|---|
+| **Code** (`.py`, `.sh`, `.yaml`, `.yml` runtime config) | Apache 2.0, with `# SPDX-License-Identifier: Apache-2.0` headers on new files. Modifications to NVIDIA-authored files inherit the upstream Apache 2.0 license. | `code/chain_server/*.py`, `code/governance/*.py`, `code/scripts/**/*.{py,sh}`, `compose.yaml`, `.github/workflows/*.yml` |
+| **Design / architecture documents** | **Copyright (c) 2026 Booz Allen Hamilton (or per applicable hackathon participation terms). All rights reserved.** Not Apache 2.0. Carries an explicit BAH-copyright header. | `adr.md`, `changelog.md`, `backlog.md`, `repo-bridge.md`, `system-design.md`, `NOTICE`, `code/governance/gpt-rct-instructions.md`, all docs under `data/scratch/hackathon-smithsonian/` (gitignored) |
+
+**Technical Rationale.**
+- Apache 2.0 covers the *runtime contract* — the code that has to
+  interoperate with the upstream NVIDIA Hybrid RAG stack. Deviating
+  from Apache 2.0 there would make the fork unusable.
+- Design and architecture docs are not part of the runtime contract;
+  they encode BAH-side thinking about lesson-planning pedagogy
+  (Evidence Triad), control-plane governance (5-dimension OECD rubric
+  applied to lessons), Custom-GPT distribution, and the
+  prototype→pilot→production roadmap. None of that is NVIDIA-derived,
+  and BAH retains copyright.
+- Public-domain corpora (CC0 RevolutionCrossroads datasets) and the
+  Apache 2.0 NVIDIA stack remain unaffected by the BAH-copyright
+  carve-out for design content.
+
+**Consequences.**
+- `NOTICE` rewritten in v0.10.1 to reflect the split.
+- Design docs at the project root each carry a one-line BAH-copyright
+  header at the top: *"Copyright (c) 2026 Booz Allen Hamilton (or per
+  applicable hackathon participation terms). Architecture and design
+  content; not licensed under the Apache 2.0 LICENSE.txt that covers
+  the surrounding code."*
+- Code files' SPDX headers remain unchanged (Apache 2.0).
+- ADR-012 stands; ADR-013 amends the over-broad licensing clause but
+  doesn't supersede the rest (NVIDIA Apache 2.0 inheritance, fork
+  posture, deferred clean-room extraction).
+- If a future contributor mixes design content into a code file (or
+  vice versa), the file inherits the more restrictive license of any
+  content present. Easier to keep them separated.

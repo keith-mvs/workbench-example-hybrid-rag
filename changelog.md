@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Booz Allen Hamilton (or per applicable hackathon participation terms). Architecture and design content; not licensed under the Apache 2.0 LICENSE.txt that covers the surrounding code. See ADR-013 + NOTICE. -->
+
 # Changelog
 
 All notable changes to R-CT (Revolution Crossroads Teacher) are recorded here.
@@ -26,6 +28,36 @@ discipline is contributor-side until then.
 ## [unreleased]
 
 (empty — next entry lands here)
+
+---
+
+## [0.10.1] — 2026-05-07
+
+PATCH — IP posture refinement. ADR-013 amends ADR-012 to split the
+licensing of code (Apache 2.0) vs architecture/design content (BAH
+copyright, not Apache-licensed). User-directed correction: NVIDIA's code
+stays Apache 2.0; BAH lesson-planning, control-plane, and Custom-GPT
+design details are BAH proprietary.
+
+### Added
+
+- **ADR-013** — "Code Apache 2.0; architecture and design docs BAH
+  copyright." Carves architecture/design content out of the Apache 2.0
+  default that ADR-012 set. Lists the affected files explicitly. Code
+  files keep their `# SPDX-License-Identifier: Apache-2.0` headers
+  unchanged.
+- **BAH-copyright header** stamped at the top of each design doc:
+  `adr.md`, `changelog.md`, `backlog.md`, `repo-bridge.md`,
+  `system-design.md`, `code/governance/gpt-rct-instructions.md`. Format:
+  HTML comment so it doesn't disrupt rendering.
+
+### Changed
+
+- **`NOTICE`** rewritten with explicit two-class split. Section 1 lists
+  Apache 2.0 code files; Section 2 lists BAH-copyright design docs.
+- **ADR-012** annotated with a `2026-05-07 amendment` note pointing at
+  ADR-013 for the definitive split. ADR-012 itself stands; ADR-013
+  amends, doesn't supersede.
 
 ---
 

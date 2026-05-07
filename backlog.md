@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Booz Allen Hamilton (or per applicable hackathon participation terms). Architecture and design content; not licensed under the Apache 2.0 LICENSE.txt that covers the surrounding code. See ADR-013 + NOTICE. -->
+
 # Backlog — R-CT
 
 Open and closed work items. **ID convention:** `RCT-NNN` for R-CT-engineering

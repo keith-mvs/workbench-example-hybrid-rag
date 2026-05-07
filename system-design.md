@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Booz Allen Hamilton (or per applicable hackathon participation terms). Architecture and design content; not licensed under the Apache 2.0 LICENSE.txt that covers the surrounding code. See ADR-013 + NOTICE. -->
+
 # Revolution Crossroads Teacher (R-CT) — System Design
 
 **Status:** CURRENT — source of truth as of 2026-05-07. Lives at the project

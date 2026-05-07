@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Booz Allen Hamilton (or per applicable hackathon participation terms). Architecture and design content; not licensed under the Apache 2.0 LICENSE.txt that covers the surrounding code. See ADR-013 + NOTICE. -->
+
 # repo bridge — local R-CT ↔ enterprise wai-hackathon-2026
 
 This project (R-CT, the Hybrid RAG fork) has a sibling repository under a

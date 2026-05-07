@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2026 Booz Allen Hamilton (or per applicable hackathon participation terms). Architecture and design content; not licensed under the Apache 2.0 LICENSE.txt that covers the surrounding code. See ADR-013 + NOTICE. -->
+
 # gpt-rct — Custom GPT setup (GOV-002 deliverable)
 
 > **STATUS — 2026-05-07 (v0.9.0):** This file is **stale** as of ADR-011.
